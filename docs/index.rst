@@ -25,7 +25,7 @@ Stmdency can be used as a python module(as a command line tool will comming soon
 
 .. code-block:: python
 
-   from stadency.extractor import Extractor
+   from stmdency.extractor import Extractor
 
    statement = """
    a = 1
@@ -41,7 +41,7 @@ or for function name:
 
 .. code-block:: python
 
-   from stadency.extractor import Extractor
+   from stmdency.extractor import Extractor
 
    statement = """
    a = 1
