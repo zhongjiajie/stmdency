@@ -1,0 +1,23 @@
+# Editor
+.idea/
+.vscode/
+
+# Cache
+__pycache__/
+.tox/
+.pytest_cache/
+.DS_Store
+_build/
+
+# Build
+build/
+dist/
+*egg-info/
+
+# Test coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Git patch
+*.patch
