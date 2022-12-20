@@ -1,6 +1,7 @@
 from typing import Dict
 
 import pytest
+
 from tests.testing import assert_extract
 
 import_cases = [
@@ -48,6 +49,62 @@ import_cases = [
                     now = datetime.now()\n
                     def foo():
                         print(now)
+                    """,
+        },
+    ),
+    (
+        "nested function call",
+        """
+        from datetime import datetime
+        def foo():
+            print(datetime.now())
+        def bar():
+            foo()
+        """,
+        {
+            "foo": """\
+                    from datetime import datetime\n
+                    def foo():
+                        print(datetime.now())
+                    """,
+            "bar": """\
+                    from datetime import datetime\n
+                    def foo():
+                        print(datetime.now())\n\n
+                    def bar():
+                        foo()
+                    """,
+        },
+    ),
+    (
+        "nested function call",
+        """
+        from datetime import datetime
+        import time
+        t = 1
+        def foo(t):
+            print(datetime.now())
+            print(t)
+        def bar():
+            t = time.time()
+            foo(t)
+        """,
+        {
+            "foo": """\
+                    from datetime import datetime\n
+                    def foo(t):
+                        print(datetime.now())
+                        print(t)
+                    """,
+            "bar": """\
+                    import time\n
+                    from datetime import datetime\n
+                    def foo(t):
+                        print(datetime.now())
+                        print(t)\n\n
+                    def bar():
+                        t = time.time()
+                        foo(t)
                     """,
         },
     ),

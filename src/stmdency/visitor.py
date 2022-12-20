@@ -1,9 +1,19 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Union
 
 import libcst as cst
 import libcst.matchers as m
-from libcst import Assign, AssignTarget, Call, FunctionDef, ImportFrom, Name, Param
+from libcst import (
+    Assign,
+    AssignTarget,
+    Attribute,
+    Call,
+    FunctionDef,
+    Import,
+    ImportFrom,
+    Name,
+    Param,
+)
 
 
 @dataclass
@@ -21,6 +31,12 @@ class StmdencyNode:
     def __hash__(self):
         return hash(self.node)
 
+    def __eq__(self, other):
+        """Override the default implementation."""
+        if isinstance(other, StmdencyNode):
+            return self.node == other.node and self.parent == other.parent
+        return False
+
 
 @dataclass
 class Visitor(cst.CSTVisitor):
@@ -33,10 +49,18 @@ class Visitor(cst.CSTVisitor):
     # Add scope to determine if the node is in the same scope
     scope: Set[cst.CSTNode] = field(default_factory=set)
 
-    def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
-        """Add the import statement to the stack."""
+    def handle_import(self, node: Union[Import, ImportFrom]) -> None:
+        """Handle `import` / `from xx import xxx` statement and parse/add to stack."""
         for name in node.names:
             self.stack.update([(name.name.value, StmdencyNode(node=node))])
+
+    def visit_Import(self, node: Import) -> Optional[bool]:
+        """Handle `import` statement and parse/add to stack."""
+        self.handle_import(node)
+
+    def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
+        """Handle `from xx import xxx` statement and parse/add to stack."""
+        self.handle_import(node)
 
     def visit_FunctionDef(self, node: FunctionDef) -> Optional[bool]:
         """Handle function definition, pass to FunctionVisitor and add scope.
@@ -87,10 +111,7 @@ class AssignVisitor(cst.CSTVisitor):
             return False
         current = self.PV.stack.get(self.name, None)
         previous = self.PV.stack.get(node.value, None)
-        if previous and previous.parent:
-            current.parent.extend(previous.parent)
-            current.parent.append(previous)
-        elif previous:
+        if previous:
             current.parent.append(previous)
 
     def visit_Call_func(self, node: Call) -> None:
@@ -140,20 +161,45 @@ class FunctionDefVisitor(cst.CSTVisitor):
         self.func_name = node.name.value
         self.PV.stack.update([(self.func_name, StmdencyNode(node=node))])
 
-    def visit_Call_func(self, node: Call) -> None:
-        """Extract global dependency in function body."""
-        if not cst.ensure_type(node.func, cst.Name):
-            return
-        in_func_name = node.func.value
-
+    def handle_func_call(self, func_name: str) -> None:
+        """Handle function call name dependencies."""
         # func come from parameter
-        if in_func_name in self.local_param:
+        if func_name in self.local_param:
             return
 
         # func come from global scope
-        if in_func_name in self.PV.stack:
-            in_func_node = self.PV.stack.get(in_func_name)
+        if func_name in self.PV.stack:
+            in_func_node = self.PV.stack.get(func_name)
             self.PV.stack[self.func_name].parent.append(in_func_node)
+
+    def visit_Call_func(self, node: Call) -> None:
+        """Extract global dependency in function body."""
+        if not m.matches(
+            node.func,
+            m.Attribute | m.Name,
+        ):
+            raise ValueError("Not support function call type yet, %s", type(node.func))
+
+        if m.matches(
+            node.func,
+            m.Attribute(
+                value=m.Name(m.MatchIfTrue(lambda name: name in self.PV.stack)),
+                attr=m.Name(),
+            ),
+        ):
+            inline_func_name = cst.ensure_type(
+                cst.ensure_type(node.func, Attribute).value, Name
+            ).value
+            self.handle_func_call(inline_func_name)
+
+        if m.matches(
+            node.func,
+            m.Name(
+                value=m.MatchIfTrue(lambda name: name in self.PV.stack),
+            ),
+        ):
+            inline_func_name = cst.ensure_type(node.func, Name).value
+            self.handle_func_call(inline_func_name)
 
     def visit_Param_name(self, node: Param) -> None:
         """Add param name to skip global dependency, Add param default to dependency."""

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import List, Optional
 
 import libcst as cst
 
@@ -23,26 +23,20 @@ class Extractor:
         parse_cst = cst.parse_module(self.source)
         parse_cst.visit(self.visitor)
 
-    def build_parents_str(self, node: StmdencyNode) -> str:
-        """Build the parents string for given node, will travel all exists parents and build the string.
+    def get_parents(self, node: StmdencyNode) -> List[StmdencyNode]:
+        """Get all parents node from given StmdencyNode.
 
         :param node: The node want to travel all the parents
         """
         parents = []
-        cst_mod = cst.parse_module("")
 
         for parent_node in node.parent:
-            for uniq in parent_node.parent:
-                parents.append(self.build_parents_str(uniq))
+            for grandparent in parent_node.parent:
+                parents.extend(self.get_parents(grandparent))
+            parents.append(parent_node)
 
-            curr = cst_mod.code_for_node(parent_node.node)
-            parents.append(curr)
-
-        # Remove duplicates and keep order, after cpython 3.6, dict can be ordered set to filter
-        # out duplicate items
-        uniq_parents = list(dict.fromkeys(parents))
-        uniq_parents.append(cst_mod.code_for_node(node.node))
-        return TOKEN.EXTRACTOR_NEW_LINE.join(uniq_parents)
+        parents.append(node)
+        return parents
 
     def get(self, value: str) -> Optional[StmdencyNode]:
         """Get dependency node for given identifier name, you can paste vairable name and function name here.
@@ -52,7 +46,7 @@ class Extractor:
         self.walk()
         return self.visitor.stack.get(value, None)
 
-    def get_code(self, value: str) -> Optional[str]:
+    def get_code(self, value: str) -> str:
         """Get dependency code for given identifier name, you can paste vairable name and function name here.
 
         Will call :meth:`stmdency.extractor.Extractor.get` to get the node and build the code string.
@@ -63,4 +57,11 @@ class Extractor:
         if not sdn:
             raise ValueError(f"Statement {value} not found")
 
-        return self.build_parents_str(sdn)
+        parents = self.get_parents(sdn)
+        # Remove duplicates and keep order, after cpython 3.6, dict can be ordered set to filter
+        # out duplicate items
+        uniq_parents = list(dict.fromkeys(parents))
+
+        cst_mod = cst.parse_module("")
+        code_snippet = [cst_mod.code_for_node(parent.node) for parent in uniq_parents]
+        return TOKEN.EXTRACTOR_NEW_LINE.join(code_snippet)

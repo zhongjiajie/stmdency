@@ -1,6 +1,7 @@
 from typing import Dict
 
 import pytest
+
 from tests.testing import assert_extract
 
 func_cases = [
