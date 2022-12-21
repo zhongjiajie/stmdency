@@ -4,9 +4,9 @@
    contain the root `toctree` directive.
 
 Stmdency's Documentation
-=======================
+========================
 
-Stmdency, **ST**ate**M**ents' depen**DENCY**, a tool handling python statements' dependencies, can
+Stmdency, **ST** ate **M** ents depen **DENCY**, a tool handling python statements' dependencies, can
 extract dependencies from python statements according to the given statement identifier.
 
 Installation
@@ -16,7 +16,7 @@ Stmdency can be installed from PyPI using pip:
 
 .. code-block:: bash
 
-   pip install stmdency
+   python -m pip install stmdency
 
 Usage
 -----
