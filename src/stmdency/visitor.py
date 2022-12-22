@@ -42,7 +42,9 @@ class StmdencyNode:
 class Visitor(cst.CSTVisitor):
     """Main class for extract statement dependency, will route to sub visitor for different node type.
 
-    :param
+    :param stack: The stack for store all the statement dependency, key is the identifier name,
+        value is StmdencyNode
+    :param scope: The scope flag to skip the some of visit_xxx in function
     """
 
     stack: Dict[str, StmdencyNode] = field(default_factory=dict)
@@ -156,6 +158,21 @@ class FunctionDefVisitor(cst.CSTVisitor):
                 leading_lines=(),
             )
 
+    # TODO: should add module config to do it, instead of hard code
+    def visit_FunctionDef_decorators(self, node: "FunctionDef") -> None:
+        """Remove function definition decorators."""
+        if node.decorators:
+            node_change = node.with_changes(
+                decorators=(),
+            )
+            self.PV.stack[self.func_name] = StmdencyNode(node_change)
+            self.scope.add(node)
+
+    def leave_FunctionDef_decorators(self, node: "FunctionDef") -> None:
+        """Remove function definition decorators in scope."""
+        if node.decorators:
+            self.scope.remove(node)
+
     def visit_FunctionDef(self, node: FunctionDef) -> Optional[bool]:
         """Extract function name from function definition."""
         self.func_name = node.name.value
@@ -180,6 +197,7 @@ class FunctionDefVisitor(cst.CSTVisitor):
         ):
             raise ValueError("Not support function call type yet, %s", type(node.func))
 
+        # func is Attribute
         if m.matches(
             node.func,
             m.Attribute(
@@ -192,6 +210,7 @@ class FunctionDefVisitor(cst.CSTVisitor):
             ).value
             self.handle_func_call(inline_func_name)
 
+        # func is Name
         if m.matches(
             node.func,
             m.Name(
@@ -216,18 +235,13 @@ class FunctionDefVisitor(cst.CSTVisitor):
         name = cst.ensure_type(node.targets[0].target, cst.Name).value
         # Add to assign target to skip visit in :func:`visit_Name`
         self.local_param.update(name)
-        self.scope.add(node)
-
-    def leave_Assign(self, original_node: Assign) -> None:
-        """Remove current node in scope."""
-        self.scope.remove(original_node)
 
     def visit_Name(self, node: Name) -> Optional[bool]:
         """Find using global name as dependency."""
         name = node.value
 
-        # func come from parameter
-        if name in self.local_param:
+        # func come from parameter or have scope cover
+        if self.scope or name in self.local_param:
             return
 
         # func come from global scope, NOTE: need to skip current function itself
