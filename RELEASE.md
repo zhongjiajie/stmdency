@@ -36,7 +36,7 @@ GitHub Actions will automatically release to PyPi based on the tag event. You ca
 
 ```shell
 # Preparation
-VERSION=0.0.1
+VERSION=<VERSION>
 git checkout -b "${VERSION}"
 # For macOS
 sed -i '' "s/__version__ = \".*\"/__version__ = \"${VERSION}\"/" src/stmdency/__init__.py
