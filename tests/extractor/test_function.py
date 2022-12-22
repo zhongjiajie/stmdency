@@ -249,6 +249,49 @@ func_cases = [
                     """,
         },
     ),
+    # FIXME: this case is not supported yet, we should add config module to do this
+    # (
+    #     "decorator",
+    #     """
+    #     from functools import wraps
+    #     a = 1
+    #     @wraps
+    #     def foo():
+    #         b = a + 3
+    #         print(a, b)
+    #     """,
+    #     {
+    #         # "a": "a = 1",
+    #         "foo": """\
+    #                 from functools import wraps\n
+    #                 a = 1\n
+    #                 @wraps
+    #                 def foo():
+    #                     b = a + 3
+    #                     print(a, b)
+    #                 """,
+    #     },
+    # ),
+    (
+        "decorator config ignore",
+        """
+        from functools import wraps
+        a = 1
+        @wraps
+        def foo():
+            b = a + 3
+            print(a, b)
+        """,
+        {
+            "a": "a = 1",
+            "foo": """\
+                    a = 1\n
+                    def foo():
+                        b = a + 3
+                        print(a, b)
+                    """,
+        },
+    ),
 ]
 
 
