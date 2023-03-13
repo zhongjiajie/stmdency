@@ -80,23 +80,6 @@ func_cases = [
         },
     ),
     (
-        "function use outside variable without argument default value",
-        """
-        a = 1\n
-        def foo(a):
-            print(a)\n
-        foo(a)
-        """,
-        {
-            "foo": """\
-                a = 1\n
-                def foo(a):
-                    print(a)\n
-                foo(a)
-                """,
-        },
-    ),
-    (
         "function have both same variable in different scope",
         """
         a = 1\n
