@@ -225,7 +225,7 @@ class FunctionDefVisitor(cst.CSTVisitor):
         if not cst.ensure_type(node.name, cst.Name):
             return
         self.local_param.update([node.name.value])
-        if node.default and m.matches(node.default, cst.Name):
+        if node.default and m.matches(node.default, m.Name()):
             default = node.default.value
             default_node = self.PV.stack.get(default)
             self.PV.stack[self.func_name].parent.append(default_node)
