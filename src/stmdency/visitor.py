@@ -225,16 +225,17 @@ class FunctionDefVisitor(cst.CSTVisitor):
         if not cst.ensure_type(node.name, cst.Name):
             return
         self.local_param.update([node.name.value])
-        if node.default and cst.ensure_type(node.default, cst.Name):
+        if node.default and m.matches(node.default, m.Name()):
             default = node.default.value
             default_node = self.PV.stack.get(default)
             self.PV.stack[self.func_name].parent.append(default_node)
 
     def visit_Assign(self, node: Assign) -> Optional[bool]:
         """Extract local parameter and add current nodo to local scope."""
-        name = cst.ensure_type(node.targets[0].target, cst.Name).value
-        # Add to assign target to skip visit in :func:`visit_Name`
-        self.local_param.update(name)
+        if m.matches(node.targets[0].target, m.Name()):
+            name = cst.ensure_type(node.targets[0].target, cst.Name).value
+            # Add to assign target to skip visit in :func:`visit_Name`
+            self.local_param.update(name)
 
     def visit_Name(self, node: Name) -> Optional[bool]:
         """Find using global name as dependency."""
