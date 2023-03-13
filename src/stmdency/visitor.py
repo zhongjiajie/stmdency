@@ -54,7 +54,10 @@ class Visitor(cst.CSTVisitor):
     def handle_import(self, node: Union[Import, ImportFrom]) -> None:
         """Handle `import` / `from xx import xxx` statement and parse/add to stack."""
         for name in node.names:
-            self.stack.update([(name.name.value, StmdencyNode(node=node))])
+            if m.matches(name, m.ImportAlias(asname=m.AsName())):
+                self.stack.update([(name.asname.name.value, StmdencyNode(node=node))])
+            else:
+                self.stack.update([(name.name.value, StmdencyNode(node=node))])
 
     def visit_Import(self, node: Import) -> Optional[bool]:
         """Handle `import` statement and parse/add to stack."""

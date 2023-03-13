@@ -108,6 +108,18 @@ import_cases = [
                     """,
         },
     ),
+    (
+        "alias",
+        """
+        import pandas as pd
+        df = pd.DataFrame()
+        """,
+        {
+            "df": """\
+                   import pandas as pd\n
+                   df = pd.DataFrame()""",
+        },
+    ),
 ]
 
 
