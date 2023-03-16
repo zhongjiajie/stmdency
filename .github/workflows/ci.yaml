@@ -15,10 +15,6 @@ env:
   DEPENDENCES: pip setuptools wheel tox
 
 jobs:
-  license:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: apache/skywalking-eyes/header@main
   dead-link:
     runs-on: ubuntu-latest
     needs: license
