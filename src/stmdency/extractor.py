@@ -4,7 +4,8 @@ from typing import List, Optional
 import libcst as cst
 
 from stmdency.constants import TOKEN
-from stmdency.visitor import StmdencyNode, Visitor
+from stmdency.models.node import StmdencyNode
+from stmdency.visitors.base import BaseVisitor
 
 
 @dataclass
@@ -16,7 +17,7 @@ class Extractor:
     """
 
     source: str
-    visitor: Visitor = field(init=False, default_factory=Visitor)
+    visitor: BaseVisitor = field(init=False, default_factory=BaseVisitor)
 
     def walk(self) -> None:
         """Walk the source code and run libcst visitor."""

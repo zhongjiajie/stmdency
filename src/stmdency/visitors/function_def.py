@@ -1,139 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Union
+from typing import Optional, Set
 
 import libcst as cst
 import libcst.matchers as m
-from libcst import (
-    Assign,
-    AssignTarget,
-    Attribute,
-    Call,
-    FunctionDef,
-    Import,
-    ImportFrom,
-    Name,
-    Param,
-)
+from libcst import Assign, Attribute, Call, FunctionDef, Name, Param
 
-
-@dataclass
-class StmdencyNode:
-    """Stmdency extracted node.
-
-    :param node: The libcst node for current statement dependency
-    :param parent: The parent node of current statement dependency, type StmdencyNode
-    """
-
-    # name: str
-    node: cst.CSTNode
-    parent: List["StmdencyNode"] = field(default_factory=list)
-
-    def __hash__(self):
-        return hash(self.node)
-
-    def __eq__(self, other):
-        """Override the default implementation."""
-        if isinstance(other, StmdencyNode):
-            return self.node == other.node and self.parent == other.parent
-        return False
-
-
-@dataclass
-class Visitor(cst.CSTVisitor):
-    """Main class for extract statement dependency, will route to sub visitor for different node type.
-
-    :param stack: The stack for store all the statement dependency, key is the identifier name,
-        value is StmdencyNode
-    :param scope: The scope flag to skip the some of visit_xxx in function
-    """
-
-    stack: Dict[str, StmdencyNode] = field(default_factory=dict)
-    # Add scope to determine if the node is in the same scope
-    scope: Set[cst.CSTNode] = field(default_factory=set)
-
-    def handle_import(self, node: Union[Import, ImportFrom]) -> None:
-        """Handle `import` / `from xx import xxx` statement and parse/add to stack."""
-        if m.matches(node.names, m.ImportStar()):
-            return
-        for name in node.names:
-            if m.matches(name, m.ImportAlias(asname=m.AsName())):
-                self.stack.update([(name.asname.name.value, StmdencyNode(node=node))])
-            else:
-                self.stack.update([(name.name.value, StmdencyNode(node=node))])
-
-    def visit_Import(self, node: Import) -> Optional[bool]:
-        """Handle `import` statement and parse/add to stack."""
-        self.handle_import(node)
-
-    def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
-        """Handle `from xx import xxx` statement and parse/add to stack."""
-        self.handle_import(node)
-
-    def visit_FunctionDef(self, node: FunctionDef) -> Optional[bool]:
-        """Handle function definition, pass to FunctionVisitor and add scope.
-
-        the reason add scope is to skip the visit_Assign in current class
-        """
-        self.scope.add(node)
-        node.visit(FunctionDefVisitor(self))
-
-    def leave_FunctionDef(self, original_node: FunctionDef) -> None:
-        """Remove function definition in scope."""
-        self.scope.remove(original_node)
-
-    def visit_Assign(self, node: Assign) -> Optional[bool]:
-        """Handle assign statement in all expect function definition, and pass to AssignVisitor."""
-        if self.scope:
-            return False
-        name = cst.ensure_type(node.targets[0].target, cst.Name).value
-        self.stack.update([(name, StmdencyNode(node=node))])
-        node.visit(AssignVisitor(self, node))
-
-
-@dataclass
-class AssignVisitor(cst.CSTVisitor):
-    """Handle assign statement dependencies.
-
-    :param PV: The parent visitor from visitor route :class:`stmdency.visitor.Visitor`, type Visitor
-    :param root_node: Assign statement root node
-    :param name: Assign statement name target variable name
-    """
-
-    # current: str
-    PV: Visitor
-    root_node: cst.CSTNode
-    name: str = None
-
-    def visit_AssignTarget_target(self, node: AssignTarget) -> None:
-        """Extract assign target name and update it to the parent stack."""
-        self.name = cst.ensure_type(node.target, cst.Name).value
-        self.PV.stack.update([(self.name, StmdencyNode(node=self.root_node))])
-
-    def visit_Name(self, node: Name) -> Optional[bool]:
-        """Extract global dependencies according to assign expression cst.Name."""
-        if (
-            not cst.ensure_type(node, cst.Name)
-            or cst.ensure_type(node, cst.Name).value == self.name
-        ):
-            return False
-        current = self.PV.stack.get(self.name, None)
-        previous = self.PV.stack.get(node.value, None)
-        if previous:
-            current.parent.append(previous)
-
-    def visit_Call_func(self, node: Call) -> None:
-        """Extract global dependencies according to assign expression cst.Call."""
-        func = node.func
-        if m.matches(
-            func,
-            m.Attribute(
-                value=m.Name(m.MatchIfTrue(lambda name: name in self.PV.stack)),
-                attr=m.Name(),
-            ),
-        ):
-            func_name = cst.ensure_type(func, cst.Attribute).value.value
-            func_node = self.PV.stack[func_name]
-            self.PV.stack[self.name].parent.append(func_node)
+from stmdency.models.node import StmdencyNode
 
 
 @dataclass
@@ -146,7 +18,7 @@ class FunctionDefVisitor(cst.CSTVisitor):
     :param scope: statement scope set to avoid error handle
     """
 
-    PV: Visitor
+    PV: "BaseVisitor"  # noqa: F821
     func_name: Optional[str] = None
     local_param: Set[str] = field(default_factory=set)
     # Add scope to determine if the node is in the same scope
