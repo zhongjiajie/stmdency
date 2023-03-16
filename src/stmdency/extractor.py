@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 import libcst as cst
 
@@ -24,7 +25,7 @@ class Extractor:
         parse_cst = cst.parse_module(self.source)
         parse_cst.visit(self.visitor)
 
-    def get_parents(self, node: StmdencyNode) -> List[StmdencyNode]:
+    def get_parents(self, node: StmdencyNode) -> list[StmdencyNode]:
         """Get all parents node from given StmdencyNode.
 
         :param node: The node want to travel all the parents
@@ -39,7 +40,7 @@ class Extractor:
         parents.append(node)
         return parents
 
-    def get(self, value: str) -> Optional[StmdencyNode]:
+    def get(self, value: str) -> StmdencyNode | None:
         """Get dependency node for given identifier name, you can paste vairable name and function name here.
 
         :param value: The identifier name, variable name or function name
