@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import List
 
 import libcst as cst
 
@@ -14,7 +15,7 @@ class StmdencyNode:
 
     # name: str
     node: cst.CSTNode
-    parent: List["StmdencyNode"] = field(default_factory=list)
+    parent: list["StmdencyNode"] = field(default_factory=list)
 
     def __hash__(self):
         return hash(self.node)

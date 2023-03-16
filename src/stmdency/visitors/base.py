@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Set, Union
 
 import libcst as cst
 import libcst.matchers as m
@@ -19,11 +20,11 @@ class BaseVisitor(cst.CSTVisitor):
     :param scope: The scope flag to skip the some of visit_xxx in function
     """
 
-    stack: Dict[str, StmdencyNode] = field(default_factory=dict)
+    stack: dict[str, StmdencyNode] = field(default_factory=dict)
     # Add scope to determine if the node is in the same scope
-    scope: Set[cst.CSTNode] = field(default_factory=set)
+    scope: dict[cst.CSTNode] = field(default_factory=set)
 
-    def handle_import(self, node: Union[Import, ImportFrom]) -> None:
+    def handle_import(self, node: Import | ImportFrom) -> None:
         """Handle `import` / `from xx import xxx` statement and parse/add to stack."""
         if m.matches(node.names, m.ImportStar()):
             return
@@ -33,27 +34,30 @@ class BaseVisitor(cst.CSTVisitor):
             else:
                 self.stack.update([(name.name.value, StmdencyNode(node=node))])
 
-    def visit_Import(self, node: Import) -> Optional[bool]:
+    def visit_Import(self, node: Import) -> bool | None:
         """Handle `import` statement and parse/add to stack."""
         self.handle_import(node)
+        return True
 
-    def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
+    def visit_ImportFrom(self, node: ImportFrom) -> bool | None:
         """Handle `from xx import xxx` statement and parse/add to stack."""
         self.handle_import(node)
+        return True
 
-    def visit_FunctionDef(self, node: FunctionDef) -> Optional[bool]:
+    def visit_FunctionDef(self, node: FunctionDef) -> bool | None:
         """Handle function definition, pass to FunctionVisitor and add scope.
 
         the reason add scope is to skip the visit_Assign in current class
         """
         self.scope.add(node)
         node.visit(FunctionDefVisitor(self))
+        return True
 
     def leave_FunctionDef(self, original_node: FunctionDef) -> None:
         """Remove function definition in scope."""
         self.scope.remove(original_node)
 
-    def visit_Assign(self, node: Assign) -> Optional[bool]:
+    def visit_Assign(self, node: Assign) -> bool | None:
         """Handle assign statement in all expect function definition, and pass to AssignVisitor."""
         if self.scope:
             return False

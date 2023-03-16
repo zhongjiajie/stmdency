@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Optional, Set
 
 import libcst as cst
 import libcst.matchers as m
@@ -19,10 +20,10 @@ class FunctionDefVisitor(cst.CSTVisitor):
     """
 
     PV: "BaseVisitor"  # noqa: F821
-    func_name: Optional[str] = None
-    local_param: Set[str] = field(default_factory=set)
+    func_name: str | None = None
+    local_param: set[str] = field(default_factory=set)
     # Add scope to determine if the node is in the same scope
-    scope: Set[cst.CSTNode] = field(default_factory=set)
+    scope: set[cst.CSTNode] = field(default_factory=set)
 
     def leave_FunctionDef_leading_lines(self, node: FunctionDef) -> None:
         """Remove leading lines from function definition.
@@ -36,7 +37,7 @@ class FunctionDefVisitor(cst.CSTVisitor):
             )
 
     # TODO: should add module config to do it, instead of hard code
-    def visit_FunctionDef_decorators(self, node: "FunctionDef") -> None:
+    def visit_FunctionDef_decorators(self, node: FunctionDef) -> None:
         """Remove function definition decorators."""
         if node.decorators:
             node_change = node.with_changes(
@@ -45,15 +46,16 @@ class FunctionDefVisitor(cst.CSTVisitor):
             self.PV.stack[self.func_name] = StmdencyNode(node_change)
             self.scope.add(node)
 
-    def leave_FunctionDef_decorators(self, node: "FunctionDef") -> None:
+    def leave_FunctionDef_decorators(self, node: FunctionDef) -> None:
         """Remove function definition decorators in scope."""
         if node.decorators:
             self.scope.remove(node)
 
-    def visit_FunctionDef(self, node: FunctionDef) -> Optional[bool]:
+    def visit_FunctionDef(self, node: FunctionDef) -> bool | None:
         """Extract function name from function definition."""
         self.func_name = node.name.value
         self.PV.stack.update([(self.func_name, StmdencyNode(node=node))])
+        return True
 
     def handle_func_call(self, func_name: str) -> None:
         """Handle function call name dependencies."""
@@ -107,14 +109,15 @@ class FunctionDefVisitor(cst.CSTVisitor):
             default_node = self.PV.stack.get(default)
             self.PV.stack[self.func_name].parent.append(default_node)
 
-    def visit_Assign(self, node: Assign) -> Optional[bool]:
+    def visit_Assign(self, node: Assign) -> bool | None:
         """Extract local parameter and add current nodo to local scope."""
         if m.matches(node.targets[0].target, m.Name()):
             name = cst.ensure_type(node.targets[0].target, cst.Name).value
             # Add to assign target to skip visit in :func:`visit_Name`
             self.local_param.update(name)
+        return True
 
-    def visit_Name(self, node: Name) -> Optional[bool]:
+    def visit_Name(self, node: Name) -> bool | None:
         """Find using global name as dependency."""
         name = node.value
 

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Optional
 
 import libcst as cst
 import libcst.matchers as m
@@ -27,7 +28,7 @@ class AssignVisitor(cst.CSTVisitor):
         self.name = cst.ensure_type(node.target, cst.Name).value
         self.PV.stack.update([(self.name, StmdencyNode(node=self.root_node))])
 
-    def visit_Name(self, node: Name) -> Optional[bool]:
+    def visit_Name(self, node: Name) -> bool | None:
         """Extract global dependencies according to assign expression cst.Name."""
         if (
             not cst.ensure_type(node, cst.Name)
