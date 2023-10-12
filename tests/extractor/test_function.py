@@ -1,4 +1,4 @@
-from typing import Dict
+from __future__ import annotations
 
 import pytest
 
@@ -296,5 +296,5 @@ func_cases = [
 
 
 @pytest.mark.parametrize("name, source, expects", func_cases)
-def test_func(name: str, source: str, expects: Dict[str, str]) -> None:
+def test_func(name: str, source: str, expects: dict[str, str]) -> None:
     assert_extract(name, source, expects)

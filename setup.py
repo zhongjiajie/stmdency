@@ -16,10 +16,11 @@
 # under the License.
 
 """The script for setting up stmdency."""
+from __future__ import annotations
+
 import logging
 import os
 from distutils.dir_util import remove_tree
-from typing import List
 
 from setuptools import Command, setup
 
@@ -30,7 +31,7 @@ class CleanCommand(Command):
     """Command to clean up python api before setup by running `python setup.py pre_clean`."""
 
     description = "Clean up project root"
-    user_options: List[str] = []
+    user_options: list[str] = []
     clean_list = [
         "build",
         "htmlcov",

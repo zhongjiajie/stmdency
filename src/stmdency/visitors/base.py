@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 import libcst as cst
 import libcst.matchers as m
-from libcst import Assign, FunctionDef, Import, ImportFrom
+from libcst import Assign, ClassDef, FunctionDef, Import, ImportFrom
 
 from stmdency.models.node import StmdencyNode
 from stmdency.visitors.assign import AssignVisitor
@@ -22,7 +22,7 @@ class BaseVisitor(cst.CSTVisitor):
 
     stack: dict[str, StmdencyNode] = field(default_factory=dict)
     # Add scope to determine if the node is in the same scope
-    scope: dict[cst.CSTNode] = field(default_factory=set)
+    scope: set[cst.CSTNode] = field(default_factory=set)
 
     def handle_import(self, node: Import | ImportFrom) -> None:
         """Handle `import` / `from xx import xxx` statement and parse/add to stack."""
@@ -43,6 +43,19 @@ class BaseVisitor(cst.CSTVisitor):
         """Handle `from xx import xxx` statement and parse/add to stack."""
         self.handle_import(node)
         return True
+
+    def visit_ClassDef(self, node: ClassDef) -> bool | None:
+        """Handle class definition, pass to ClassDefVisitor and add scope.
+
+        the reason add scope is to skip the visit_Assign in current class
+        """
+        self.scope.add(node)
+        self.stack.update([(node.name.value, StmdencyNode(node=node))])
+        return True
+
+    def leave_ClassDef(self, original_node: ClassDef) -> None:
+        """Remove class definition in scope."""
+        self.scope.remove(original_node)
 
     def visit_FunctionDef(self, node: FunctionDef) -> bool | None:
         """Handle function definition, pass to FunctionVisitor and add scope.

@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import textwrap
-from typing import Dict
 
 from stmdency.extractor import Extractor
 
 
-def assert_extract(name: str, source: str, expects: Dict[str, str]) -> None:
+def assert_extract(name: str, source: str, expects: dict[str, str]) -> None:
     wrap_source = textwrap.dedent(source)
     extractor = Extractor(source=wrap_source)
     for expect in expects:
