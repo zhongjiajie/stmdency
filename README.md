@@ -19,6 +19,52 @@ stmdency, **sta**tement depen**dency** is a Python library for extracting depend
 python -m pip install --upgrade stmdency
 ```
 
+## Usage
+
+Let's say we have a Python script named  `test.py` with the following content:
+
+```python
+a = 1
+b = 2
+
+def bar():
+   b = a + 3
+   print(a, b)
+
+def foo():
+   bar(b)
+```
+
+We want to extract function `foo` and all its dependencies. `stmdency` can do this for us:
+
+```python
+from stmdency.extractor import Extractor
+
+with open("test.py", "r") as f:
+   source = f.read()
+   extractor = Extractor(source)
+   print(extractor.get_code("foo"))
+```
+
+The output will be:
+
+```python
+a = 1
+
+def bar():
+    b = a + 3
+    print(a, b)
+
+b = 2
+
+def foo():
+    bar(b)
+```
+
 ## Documentation
 
-The documentation host on read the doc and is available at [https://stmdency.readthedocs.io](https://stmdency.readthedocs.io).
+The documentation host read the doc and is available at [https://stmdency.readthedocs.io](https://stmdency.readthedocs.io).
+
+## Who is using stmdency?
+
+- [dolphinscheduler-sdk-python](https://github.com/apache/dolphinscheduler-sdk-python): Python API to manage Dolphinscheduler workflow by code, aka PyDolphinscheduler.
