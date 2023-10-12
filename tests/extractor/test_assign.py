@@ -1,4 +1,4 @@
-from typing import Dict
+from __future__ import annotations
 
 import pytest
 
@@ -81,5 +81,5 @@ assign_cases = [
 
 
 @pytest.mark.parametrize("name, source, expects", assign_cases)
-def test_assign(name: str, source: str, expects: Dict[str, str]) -> None:
+def test_assign(name: str, source: str, expects: dict[str, str]) -> None:
     assert_extract(name, source, expects)
