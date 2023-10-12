@@ -3,14 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Stmdency's Documentation
-========================
+Stmdency
+========
 
 Stmdency, **ST** ate **M** ents depen **DENCY**, a tool handling python statements' dependencies, can
 extract dependencies from Python statements according to the given statement identifier.
 
 Installation
-------------
+============
 
 Stmdency can be installed from PyPI using pip:
 
@@ -18,13 +18,14 @@ Stmdency can be installed from PyPI using pip:
 
    python -m pip install --upgrade stmdency
 
+
 Usage
------
+=====
 
 Stmdency can be used as a Python module(as a command line tool will coming soon).
 
 Extract Variable Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 Let's say we have a python code like below, we define a variable ``a`` and ``b`` and ``b`` depends on ``a``:
 
@@ -59,7 +60,7 @@ The result will be:
 
 
 Extract Function Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 Stmdency not only can extract variable dependencies, but also can extract function dependencies. Suppose we
 have the script below.
@@ -111,7 +112,7 @@ The result will be:
        bar(b)
 
 Python Code in File
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 As you can see, we use a string to represent the Python code in the above examples. But in most cases, our code
 is in a file. Stmdency can also handle this situation.

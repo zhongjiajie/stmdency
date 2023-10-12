@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
 from stmdency import __version__  # noqa
 
 project = "stmdency"
-copyright = "2022, Jay Chung"
+copyright = "2023, Jay Chung"
 author = "Jay Chung"
 release = __version__
 
