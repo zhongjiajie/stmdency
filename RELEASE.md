@@ -46,7 +46,7 @@ git commit -am "Release v${VERSION}"
 
 # Tag & Auto Release in GitHub Actions
 git tag -a "${VERSION}" -m "Release stmdency v${VERSION}"
-git push --tags
+git push tags/"${VERSION}"
 ```
 
 ## Ref
