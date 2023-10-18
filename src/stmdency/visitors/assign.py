@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import libcst as cst
 import libcst.matchers as m
 from libcst import AssignTarget, Call, Name
 
 from stmdency.models.node import StmdencyNode
+
+if TYPE_CHECKING:
+    from stmdency.visitors.base import BaseVisitor
 
 
 @dataclass
@@ -19,7 +23,7 @@ class AssignVisitor(cst.CSTVisitor):
     """
 
     # current: str
-    PV: "BaseVisitor"  # noqa: F821
+    PV: BaseVisitor
     root_node: cst.CSTNode
     name: str = None
 

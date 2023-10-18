@@ -125,4 +125,5 @@ import_cases = [
 
 @pytest.mark.parametrize("name, source, expects", import_cases)
 def test_import(name: str, source: str, expects: dict[str, str]) -> None:
+    """Test import statement."""
     assert_extract(name, source, expects)

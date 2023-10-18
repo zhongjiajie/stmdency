@@ -6,6 +6,7 @@ from stmdency.extractor import Extractor
 
 
 def assert_extract(name: str, source: str, expects: dict[str, str]) -> None:
+    """Test tools, asserting the extracted code is the same as expected."""
     wrap_source = textwrap.dedent(source)
     extractor = Extractor(source=wrap_source)
     for expect in expects:

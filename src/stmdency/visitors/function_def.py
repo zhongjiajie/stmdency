@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 import libcst as cst
 import libcst.matchers as m
 from libcst import Assign, Attribute, Call, FunctionDef, Name, Param
 
 from stmdency.models.node import StmdencyNode
+
+if TYPE_CHECKING:
+    from stmdency.visitors.base import BaseVisitor
 
 
 @dataclass
@@ -19,7 +23,7 @@ class FunctionDefVisitor(cst.CSTVisitor):
     :param scope: statement scope set to avoid error handle
     """
 
-    PV: "BaseVisitor"  # noqa: F821
+    PV: BaseVisitor  # noqa: F821
     func_name: str | None = None
     local_param: set[str] = field(default_factory=set)
     # Add scope to determine if the node is in the same scope

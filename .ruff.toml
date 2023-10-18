@@ -1,0 +1,46 @@
+src = ["src"]
+
+# max-line-length = 88
+line-length = 110
+
+extend-select = [
+    "I",   # isort
+    "D",   # pydocstyle
+    "UP",  # pyupgrade
+]
+
+ignore = [
+    # D100 Missing docstring in public module
+    "D100",
+    # D100 Missing docstring in public module
+    "D104",
+    # D107: Missing docstring in __init__
+    "D107",
+    # D105: Missing docstring in magic method
+    "D105",
+    # D418: Function/ Method decorated with @overload shouldn’t contain a docstring
+    "D418",
+]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    "__pycache__",
+    ".egg-info",
+    ".eggs",
+    ".git",
+    ".pytest_cache",
+    ".tox",
+    "build",
+    "dist",
+    "examples",
+    "venv",
+]
+
+[isort]
+# Mark sqlfluff, test and it's plugins as known first party
+known-first-party = [
+    "stmdency",
+]
+
+[pydocstyle]
+convention = "google"

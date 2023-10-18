@@ -82,4 +82,5 @@ assign_cases = [
 
 @pytest.mark.parametrize("name, source, expects", assign_cases)
 def test_assign(name: str, source: str, expects: dict[str, str]) -> None:
+    """Test assignment extraction."""
     assert_extract(name, source, expects)
