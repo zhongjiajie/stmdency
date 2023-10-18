@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import libcst as cst
 import libcst.matchers as m
 from libcst import AssignTarget, Call, Name
 
 from stmdency.models.node import StmdencyNode
-from stmdency.visitors.base import BaseVisitor
+
+if TYPE_CHECKING:
+    from stmdency.visitors.base import BaseVisitor
 
 
 @dataclass
