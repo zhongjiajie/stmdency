@@ -10,7 +10,7 @@
 [![CI](https://github.com/zhongjiajie/stmdency/actions/workflows/ci.yaml/badge.svg)](https://github.com/zhongjiajie/stmdency/actions/workflows/ci.yaml)
 [![Documentation Status](https://readthedocs.org/projects/stmdency/badge/?version=latest)](https://stmdency.readthedocs.io/en/latest/?badge=latest)
 
-stmdency, **sta**tement depen**dency** is a Python library for extracting dependencies between statements in a Python program.
+Stmdency, **ST**ate**M**ent depen**DENCY** is a Python library for extracting dependencies between Python statements.
 
 ## Installation
 
