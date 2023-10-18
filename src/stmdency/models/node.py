@@ -15,7 +15,7 @@ class StmdencyNode:
 
     # name: str
     node: cst.CSTNode
-    parent: list["StmdencyNode"] = field(default_factory=list)
+    parent: list[StmdencyNode] = field(default_factory=list)
 
     def __hash__(self):
         return hash(self.node)

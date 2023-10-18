@@ -297,4 +297,5 @@ func_cases = [
 
 @pytest.mark.parametrize("name, source, expects", func_cases)
 def test_func(name: str, source: str, expects: dict[str, str]) -> None:
+    """Test function extraction."""
     assert_extract(name, source, expects)
